@@ -54,7 +54,8 @@ sudo mkdir -p /srv/wordpress
   * Create docker-compose.yaml file:
   ```vim docker-compose.yaml```
   * Copy and paste this config
-  ```version: '3'
+  ```
+version: '3'
 services:
   mysql:
     image: mysql:latest
