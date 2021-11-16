@@ -4,41 +4,88 @@
 
 ``` sudo apt update ```
 
-* install packages
+* install proper https packages
 
 ```sudo apt install apt-transport-https ca-certificates curl software-properties-common```
 
-* install gpg key
+* install gpg key for the Docker repo
 
 ```curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -```
 
-* add the docker repo 
+* add the Docker APT repo 
 
   ```sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"```
 
-* verify install from the Docker repo
+* Run upate command again
 
-```apt-cache policy docker-ce```
+```sudo apt update```
 
 * install Docker
 
-```sudo apt install docker-ce```
+```sudo apt install docker-ce docker-ce-cli containerd.io```
 
-* check docker is running
+* check docker is running (if it says "active" then everything is Gucci)
 
-```sudo systemctl status docker```
+```systemctl is-active docker```
 
-## Installing OpenVas
+## Installing and Configuring WordPress
 * Note: I had to use sudo in front of all these because I did not add users to a docker group
 
-```docker run -d -p 443:443 --name openvas mikesplain/openvas:9```
-    
+* Install Docker Compose
 
-### header 2
+```sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose```
 
-* point
-* point
-* point
+* Change Executable Bits
+```sudo chmod +x /usr/local/bin/docker-compose```
 
+* Check the installation
+```docker-compose --version```
 
-  
+* Create Directory for Wordpress Containter
+```
+sudo mkdir -p /srv/wordpress
+```
+* I had to sign-in as root to do this part, so I used:
+```sudo -i```
+  * Enter directory we just created
+  ```cd /srv/wordpress```
+  * Install Vim (If needed)
+  ```apt install vim```
+  * Create docker-compose.yaml file:
+  ```vim docker-compose.yaml```
+  * Copy and paste this config
+  ```version: '3'
+services:
+  mysql:
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: my_password
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wordpress_user
+      MYSQL_PASSWORD: wordpress_password
+    volumes:
+      - mysql_data:/var/lib/mysql
+  wordpress:
+    image: wordpress:latest
+    depends_on:
+      - mysql
+    ports:
+      - 8080:80
+    restart: always
+    environment:
+      WORDPRESS_DB_HOST: mysql:3306
+      WORDPRESS_DB_USER: wordpress_user
+      WORDPRESS_DB_PASSWORD: wordpress_password
+    volumes:
+      - ./wp-content:/var/www/html/wp-content
+volumes:
+  mysql_data:
+  ```
+ * Switch back to your normal user and run
+ ```sudo docker-compose up -d```
+ * After successful completion you should be able to access the WordPress admin site at:
+ ```http://localhost:8080/```
+ 
+ * Complete the account creation and log in, you're done!
+
